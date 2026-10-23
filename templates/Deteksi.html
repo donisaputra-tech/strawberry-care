@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deteksi Penyakit Daun Stroberi</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* === LAYOUT DASAR === */
+    html, body { height: 100%; margin: 0; }
+    body { 
+      background: linear-gradient(135deg, #fce4ec, #e8f5e9); 
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    .content-wrapper { flex: 1 0 auto; }
+
+    /* === NAVBAR RATA KANAN (SYNC) === */
+    .navbar {
+      background: linear-gradient(90deg, #d32f2f, #388e3c);
+      padding: 15px 0;
+    }
+    .navbar-collapse { display: flex !important; justify-content: flex-end; }
+    .navbar .nav-item { margin-left: 35px; }
+    .navbar .nav-link {
+      position: relative; color: #ffffff !important; font-weight: 600;
+      display: flex; align-items: center; gap: 8px; padding: 10px 5px;
+      transition: transform 1.8s cubic-bezier(0.22, 1, 0.36, 1), color 1.5s ease;
+      transform: translateY(0);
+    }
+    .navbar .nav-link:hover { color: #fff700 !important; transform: translateY(-12px); }
+    .navbar .nav-link::after {
+      content: ""; position: absolute; left: 0; bottom: -2px; width: 0; height: 3.5px;
+      background: #fff700; border-radius: 10px; transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1); 
+    }
+    .navbar .nav-link:hover::after { width: 100%; }
+    .navbar .nav-link.active { color: #ffe082 !important; }
+    .navbar .nav-link.active::after { width: 100%; background: #ffe082; }
+
+    /* === HEADER ESTETIK === */
+    .header-aesthetic {
+      padding: 80px 0 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    .header-aesthetic h2 {
+      font-weight: 700;
+      font-size: 2.8rem;
+      color: #d32f2f;
+      letter-spacing: -1px;
+      margin-bottom: 15px;
+      /* Animasi teks muncul perlahan */
+      animation: fadeInDown 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .header-aesthetic p {
+      color: #555;
+      font-size: 1.1rem;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.6;
+      animation: fadeInDown 2.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Dekorasi Lingkaran Halus (Aesthetic Background) */
+    .header-aesthetic::before {
+      content: ""; position: absolute; top: -50px; left: -50px;
+      width: 200px; height: 200px; background: rgba(211, 47, 47, 0.05);
+      border-radius: 50%; z-index: -1;
+    }
+    .header-aesthetic::after {
+      content: ""; position: absolute; bottom: -30px; right: -30px;
+      width: 150px; height: 150px; background: rgba(56, 142, 60, 0.05);
+      border-radius: 50%; z-index: -1;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === UPLOAD SECTION === */
+    .upload-card {
+      background: rgba(255, 255, 255, 0.8);
+      border: 3px solid rgb(255, 0, 0);
+      border-radius: 25px;
+      padding: 50px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+      transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .upload-card:hover {
+      background: #ffffff;
+      box-shadow: 0 25px 50px rgba(211, 47, 47, 0.1);
+      transform: translateY(-5px);
+    }
+
+    .btn-strawberry { 
+      background: linear-gradient(135deg, #d32f2f, #f44336);
+      color: #fff; border: none; padding: 15px 40px; border-radius: 12px;
+      transition: 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .btn-strawberry:hover { 
+      background: linear-gradient(135deg, #388e3c, #4caf50);
+      color: #fff; border: none; padding: 15px 40px; border-radius: 12px;
+      transform: scale(1.05) translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .result-card {
+      background: #fff; border: 2px solid #388e3c; border-radius: 20px;
+      margin-top: 40px; padding: 30px; display: none;
+      animation: slideUp 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === FOOTER SLIM MINIMALIS === */
+    footer {
+      background: linear-gradient(90deg, #d32f2f, #388e3c);
+      color: white;
+      padding: 20px 0; /* Padding diperkecil agar box tidak besar */
+      margin-top: 50px;
+      
+      width: 100%;
+    }
+
+    .footer-text-main {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .footer-text-sub {
+      font-size: 0.75rem;
+      opacity: 0.8;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="content-wrapper">
+    <nav class="navbar navbar-expand-lg shadow-sm">
+      <div class="container-fluid px-5">
+        <a class="navbar-brand fw-bold text-white" href="Home.php">🍓 STRAWBERRY CARE</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link fw-semibold" href="../User/Home.php"><i class="fas fa-home"></i> Home</a></li>
+            <li class="nav-item"><a class="nav-link fw-semibold" href="../User/profil.php"><i class="fas fa-user"></i> Riwayat</a></li>
+            <li class="nav-item"><a class="nav-link fw-semibold" href="../User/Penyakit.php"><i class="fas fa-leaf"></i> Penyakit</a></li>
+            <li class="nav-item"><a class="nav-link fw-semibold active" href="Deteksi.php"><i class="fas fa-search"></i> Deteksi</a></li>
+            <li class="nav-item"><a class="nav-link fw-semibold" href="../Logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="header-aesthetic">
+      <div class="container">
+        <h2>Smart Detection System</h2>
+        <p>Gunakan teknologi AI untuk menganalisis kesehatan daun stroberi Anda dalam hitungan detik. Cukup unggah foto dan dapatkan hasil diagnosis instan.</p>
+      </div>
+    </div>
+
+    <div class="container pb-5">
+        <div class="upload-card mx-auto" style="max-width: 700px;">
+            <div class="text-center mb-4">
+              <div class="mb-3" style="font-size: 60px;">🍃</div>
+              <h4 class="fw-bold">Pilih Gambar Daun</h4>
+              <p class="text-muted small">Pastikan pencahayaan cukup untuk hasil terbaik</p>
+            </div>
+
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="imageUpload" class="form-control mb-4 p-3 shadow-sm" accept="image/*" required style="border-radius: 12px; border: 1px solid #ddd;">
+                <button type="submit" class="btn btn-strawberry btn-lg w-100 fw-bold">Mulai Proses Analisis</button>
+            </form>
+
+            <div id="statusMessage" class="mt-4 text-center fw-bold"></div>
+
+            <div id="resultCard" class="result-card">
+                <h5 class="fw-bold text-danger mb-4 text-center"><i class="fas fa-certificate"></i> Laporan Analisis Kesehatan</h5>
+                <img id="previewImage" class="img-fluid rounded mb-4 shadow-sm" style="max-height: 320px; width: 100%; object-fit: cover; display:none; border: 3px solid #388e3c;">
+                
+                <div class="table-responsive">
+                  <table class="table table-borderless align-middle">
+                      <tr><td class="fw-bold text-muted">Kondisi / Penyakit</td><td id="predictionLabel" class="text-danger fw-bold h5"></td></tr>
+                      <tr><td class="fw-bold text-muted">Akurasi AI</td><td id="predictionProb" class="text-success fw-bold"></td></tr>
+                      <tr><td colspan="2"><hr></td></tr>
+                      <tr><td class="fw-bold text-muted" colspan="2">Deskripsi Lengkap:</td></tr>
+                      <tr><td colspan="2" id="predictionDesc" class="text-start text-dark py-0"></td></tr>
+                      <tr><td class="fw-bold text-muted mt-3" colspan="2">Langkah Penanganan:</td></tr>
+                      <tr><td colspan="2" id="predictionTreat" class="text-start text-dark py-0"></td></tr>
+                  </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+document.getElementById("uploadForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const fileInput = document.getElementById("imageUpload");
+    const file = fileInput.files[0];
+    const status = document.getElementById("statusMessage");
+    const resultCard = document.getElementById("resultCard");
+
+    // RESET
+    resultCard.style.display = "none";
+    status.innerHTML = "";
+
+    // ================= VALIDASI FILE =================
+    if (!file) {
+        status.className = "mt-4 text-center fw-bold text-danger";
+        status.innerHTML = "⚠️ Silakan pilih gambar daun stroberi terlebih dahulu.";
+        return;
+    }
+
+    // Validasi tipe file
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (!allowedTypes.includes(file.type)) {
+        status.className = "mt-4 text-center fw-bold text-danger";
+        status.innerHTML = "❌ File tidak valid. Harap upload gambar (JPG / PNG).";
+        fileInput.value = "";
+        return;
+    }
+
+    // Validasi ukuran file (maks 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        status.className = "mt-4 text-center fw-bold text-danger";
+        status.innerHTML = "❌ Ukuran gambar terlalu besar. Maksimal 5 MB.";
+        fileInput.value = "";
+        return;
+    }
+
+    // ================= PROSES ANALISIS =================
+    status.className = "mt-4 text-center fw-bold text-primary";
+    status.innerHTML = "🔍 Sistem sedang menganalisis gambar daun... <span class='spinner-border spinner-border-sm'></span>";
+
+    try {
+        const fd = new FormData();
+        fd.append("image", file);
+
+        const res = await fetch("http://127.0.0.1:5000/predict", {
+            method: "POST",
+            body: fd
+        });
+
+        // Jika server error
+        if (!res.ok) {
+            throw new Error("Gagal memproses gambar");
+        }
+
+        const result = await res.json();
+
+        // Jika API menolak gambar
+        if (result.error) {
+            status.className = "mt-4 text-center fw-bold text-danger";
+            status.innerHTML = "❌ " + result.error;
+            return;
+        }
+
+        // ================= TAMPILKAN HASIL =================
+        document.getElementById("predictionLabel").textContent = result.label;
+        document.getElementById("predictionProb").textContent =
+            (result.probability * 100).toFixed(2) + "% Match";
+        document.getElementById("predictionDesc").textContent = result.description;
+
+        let treatBox = document.getElementById("predictionTreat");
+        let items = result.treatment
+            .split(/[,;\n]+/)
+            .map(i => i.trim())
+            .filter(i => i);
+
+        treatBox.innerHTML = items.length > 1
+            ? `<ul class='ps-3 mt-2'>${items.map(i => `<li>${i}</li>`).join("")}</ul>`
+            : `<p class='mt-2'>${result.treatment}</p>`;
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById("previewImage").src = e.target.result;
+            document.getElementById("previewImage").style.display = "block";
+        };
+        reader.readAsDataURL(file);
+
+        resultCard.style.display = "block";
+        status.innerHTML = "";
+
+        // ================= SIMPAN RIWAYAT =================
+        await fetch("simpan_deteksi.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                label: result.label,
+                probability: result.probability,
+                description: result.description,
+                treatment: result.treatment,
+                image_name: result.image_name
+            })
+        });
+
+    } catch (err) {
+        status.className = "mt-4 text-center fw-bold text-danger";
+        status.innerHTML =
+            "⚠️ Gagal memproses gambar. Pastikan yang diunggah adalah **daun stroberi** dan server AI aktif.";
+    }
+});
+</script>
+
+<footer>
+  <div class="container text-center">
+    <div class="footer-text-main">
+      🍓 AI Agriculture System | © 2025 Muhammad Doni Saputra & Era Dani Kurniawan
+    </div>
+    
+    <div class="footer-text-sub">
+      Deep Learning (CNN) Strawberry Disease Detection
+    </div>
+  </div>
+</footer>
+</body>
+</html>
